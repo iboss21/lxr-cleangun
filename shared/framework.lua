@@ -1,14 +1,16 @@
 --[[
-███████████████████████████████████████████████████████████████████████████████
-█                                                                             █
-█      ██╗     ██╗  ██╗██████╗       ███████╗██████╗  █████╗ ███╗   ███╗    █
-█      ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔══██╗██╔══██╗████╗ ████║    █
-█      ██║      ╚███╔╝ ██████╔╝█████╗█████╗  ██████╔╝███████║██╔████╔██║    █
-█      ██║      ██╔██╗ ██╔══██╗╚════╝██╔══╝  ██╔══██╗██╔══██║██║╚██╔╝██║    █
-█      ███████╗██╔╝ ██╗██║  ██║      ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║    █
-█      ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝      ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝    █
-█                                                                             █
-███████████████████████████████████████████████████████████████████████████████
+    ██╗     ██╗  ██╗██████╗        ██████╗██╗     ███████╗ █████╗ ███╗   ██╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██║     ██╔════╝██╔══██╗████╗  ██║
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║     █████╗  ███████║██╔██╗ ██║
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║     ██╔══╝  ██╔══██║██║╚██╗██║
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗███████╗███████╗██║  ██║██║ ╚████║
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝
+                    ███████╗██████╗  █████╗ ███╗   ███╗███████╗              
+                    ██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝              
+                    █████╗  ██████╔╝███████║██╔████╔██║█████╗                
+                    ██╔══╝  ██╔══██╗██╔══██║██║╚██╔╝██║██╔══╝                
+                    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗              
+                    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝              
                                                                               
     🐺 FRAMEWORK ADAPTER - Multi-Framework Compatibility Layer
     
@@ -16,49 +18,47 @@
     RedM frameworks, allowing seamless operation across LXR-Core, RSG-Core,
     VORP, and other supported frameworks.
     
-    ═══════════════════════════════════════════════════════════════════════
+    ═══════════════════════════════════════════════════════════════════════════════
     SERVER INFORMATION
-    ═══════════════════════════════════════════════════════════════════════
+    ═══════════════════════════════════════════════════════════════════════════════
     Server:     The Land of Wolves 🐺
     Tagline:    Georgian RP 🇬🇪 | მგლების მიწა - რჩეულთა ადგილი!
     Discord:    https://discord.gg/CrKcWdfd3A
     Website:    https://www.wolves.land
     Developer:  iBoss21 / The Lux Empire
     
-    ═══════════════════════════════════════════════════════════════════════
+    ═══════════════════════════════════════════════════════════════════════════════
     RESOURCE INFORMATION
-    ═══════════════════════════════════════════════════════════════════════
+    ═══════════════════════════════════════════════════════════════════════════════
     Version:    1.0.0
     Target:     RedM (RDR3)
     Performance: Optimized - 0.00ms idle, <0.01ms active
     Tags:       Framework, Adapter, Multi-Core, LXR, RSG, VORP
     
-    ═══════════════════════════════════════════════════════════════════════
+    ═══════════════════════════════════════════════════════════════════════════════
     FRAMEWORK SUPPORT
-    ═══════════════════════════════════════════════════════════════════════
+    ═══════════════════════════════════════════════════════════════════════════════
     Primary:    LXR-Core, RSG-Core
     Supported:  VORP Core
     Optional:   RedEM:RP, QBR, QR, Standalone
     
-    ═══════════════════════════════════════════════════════════════════════
+    ═══════════════════════════════════════════════════════════════════════════════
     CREDITS
-    ═══════════════════════════════════════════════════════════════════════
+    ═══════════════════════════════════════════════════════════════════════════════
     Created by: iBoss21
     Organization: The Lux Empire
     For: wolves.land - The Land of Wolves
     
-    Copyright © 2026 The Lux Empire. All rights reserved.
-    
-███████████████████████████████████████████████████████████████████████████████
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
 ]]
 
 Framework = {}
 Framework.Type = nil
 Framework.Object = nil
 
--- ═════════════════════════════════════════════════════════════════════════
--- █████ FRAMEWORK DETECTION
--- ═════════════════════════════════════════════════════════════════════════
+-- ████████████████████████████████████████████████████████████████████████████████
+-- ████████████████████████ FRAMEWORK DETECTION ███████████████████████████████████
+-- ████████████████████████████████████████████████████████████████████████████████
 
 function Framework.DetectFramework()
     local detectionOrder = Config.FrameworkSettings.detectionOrder or {
@@ -79,7 +79,7 @@ function Framework.DetectFramework()
                 else
                     Framework.Object = exports['lxr-core']:GetCoreObject()
                 end
-                print("^2[LXR-CleanGun]^7 Detected framework: ^3LXR-Core^7")
+                print("^2[LXR-CleanGun]^7 🐺 Detected framework: ^3LXR-Core^7")
                 return 'LXR'
             elseif framework == 'rsg-core' then
                 Framework.Type = 'RSG'
@@ -88,7 +88,7 @@ function Framework.DetectFramework()
                 else
                     Framework.Object = exports['rsg-core']:GetCoreObject()
                 end
-                print("^2[LXR-CleanGun]^7 Detected framework: ^3RSG-Core^7")
+                print("^2[LXR-CleanGun]^7 🐺 Detected framework: ^3RSG-Core^7")
                 return 'RSG'
             elseif framework == 'vorp_core' then
                 Framework.Type = 'VORP'
@@ -97,11 +97,11 @@ function Framework.DetectFramework()
                 else
                     Framework.Object = {}
                 end
-                print("^2[LXR-CleanGun]^7 Detected framework: ^3VORP Core^7")
+                print("^2[LXR-CleanGun]^7 🐺 Detected framework: ^3VORP Core^7")
                 return 'VORP'
             elseif framework == 'redem_roleplay' then
                 Framework.Type = 'RedEM'
-                print("^2[LXR-CleanGun]^7 Detected framework: ^3RedEM:RP^7")
+                print("^2[LXR-CleanGun]^7 🐺 Detected framework: ^3RedEM:RP^7")
                 return 'RedEM'
             elseif framework == 'qbr-core' then
                 Framework.Type = 'QBR'
@@ -110,7 +110,7 @@ function Framework.DetectFramework()
                 else
                     Framework.Object = exports['qbr-core']:GetCoreObject()
                 end
-                print("^2[LXR-CleanGun]^7 Detected framework: ^3QBR-Core^7")
+                print("^2[LXR-CleanGun]^7 🐺 Detected framework: ^3QBR-Core^7")
                 return 'QBR'
             elseif framework == 'qr-core' then
                 Framework.Type = 'QR'
@@ -119,7 +119,7 @@ function Framework.DetectFramework()
                 else
                     Framework.Object = exports['qr-core']:GetCoreObject()
                 end
-                print("^2[LXR-CleanGun]^7 Detected framework: ^3QR-Core^7")
+                print("^2[LXR-CleanGun]^7 🐺 Detected framework: ^3QR-Core^7")
                 return 'QR'
             end
         end
@@ -127,7 +127,7 @@ function Framework.DetectFramework()
     
     -- Standalone fallback
     Framework.Type = 'Standalone'
-    print("^2[LXR-CleanGun]^7 Running in ^3Standalone^7 mode")
+    print("^2[LXR-CleanGun]^7 🐺 Running in ^3Standalone^7 mode")
     return 'Standalone'
 end
 
@@ -327,6 +327,6 @@ Citizen.CreateThread(function()
         Framework.DetectFramework()
     else
         Framework.Type = Config.Framework
-        print("^2[LXR-CleanGun]^7 Using manual framework: ^3" .. Config.Framework .. "^7")
+        print("^2[LXR-CleanGun]^7 🐺 Using manual framework: ^3" .. Config.Framework .. "^7")
     end
 end)
