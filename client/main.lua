@@ -1,178 +1,224 @@
---==========================================--
---====   	   CLEAN GUN SCRIPT     	====--
---====      Rework of Le Bookmaker   	====--
---====        and Alphatule Script		====--
---====         	 By Darky_13         	====--
---==========================================--
-IsInCameraMode = nil
+--[[
+███████████████████████████████████████████████████████████████████████████████
+█                                                                             █
+█      ██╗     ██╗  ██╗██████╗        ██████╗██╗     ███████╗ █████╗ ███╗   █
+█      ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██║     ██╔════╝██╔══██╗████╗  █
+█      ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║     █████╗  ███████║██╔██╗ █
+█      ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║     ██╔══╝  ██╔══██║██║╚██╗█
+█      ███████╗██╔╝ ██╗██║  ██║      ╚██████╗███████╗███████╗██║  ██║██║ ╚███
+█      ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚══
+█                                                                             █
+███████████████████████████████████████████████████████████████████████████████
 
-local key = 0xF09866F3
+    🐺 WEAPON CLEANING SYSTEM - Client Logic
+    
+    Client-side weapon cleaning animations, camera control, and inspection
+    UI for the immersive weapon maintenance system.
+    
+    For: The Land of Wolves - wolves.land
+    By: iBoss21 / The Lux Empire
+    
+    Original: Le Bookmaker & Alphatule (RedEM:RP)
+    VORP Rework: Darky_13
+    LXR Conversion: iBoss21
+    
+    Copyright © 2026 The Lux Empire. All rights reserved.
 
--- for cleaning your gun with animation ENJOY
-RegisterNetEvent('cleaning:startcleaningshort')
-AddEventHandler('cleaning:startcleaningshort', function()
-	DestroyAllCams(true)
-	local cam = CreateCameraWithParams("DEFAULT_SCRIPTED_CAMERA", GetEntityCoords(PlayerPedId()), 0.0, 0.0, 0.0, 35.0, true, 2)
-    local ped = PlayerPedId()
-    local Cloth = CreateObject(GetHashKey('s_balledragcloth01x'), GetEntityCoords(PlayerPedId()), false, true, false, false, true)
-    local PropId = GetHashKey("CLOTH")
-    local actshort = GetHashKey("SHORTARM_CLEAN_ENTER")
-    local actlong = GetHashKey("LONGARM_CLEAN_ENTER")
-	local wep = GetCurrentPedWeaponEntityIndex(ped, 0)
-    local _, wepHash = GetCurrentPedWeapon(ped, true, 0, true)
-	local WeaponType = GetWeaponType(wepHash)
-    local retval, weaponHash = GetCurrentPedWeapon(PlayerPedId(), false, weaponHash, false)
-    local model = GetWeapontypeGroup(weaponHash)
-    local object = GetObjectIndexFromEntityIndex(GetCurrentPedWeaponEntityIndex(PlayerPedId(),0))
-    if wepHash == `WEAPON_UNARMED` then return end
-    if WeaponType == "SHOTGUN" then WeaponType = "LONGARM" end
-    if WeaponType == "MELEE" then WeaponType = "SHORTARM" end
-	if WeaponType == "BOW" then WeaponType = "SHORTARM" end
-	TriggerEvent("vorp_inventory:CloseInv");
-    TaskItemInteraction_2(PlayerPedId(), wepHash, Cloth, PropId, GetHashKey(WeaponType.."_CLEAN_ENTER"), 1, 1, -1.0)  -- Enter cleaning mode
-	Wait(1000) -- waiting a little bit before switch to custom camera to render a smooth camera view
-	AttachCamToEntity(cam,PlayerPedId(), 0.65, 0.0, 1.15, true) -- attach the camera to the current selected weapon
-	PointCamAtEntity(cam, object, 0.0, 0.0, 0.0, true) -- the camera is targetting the current selected weapon
-	RenderScriptCams(true, true, 1500, true, true) -- render the camera config setted before and initiates the movement
-	Wait(1500) -- waiting a little bit to avoid drop camera before cleaning is done
-	IsInCameraMode = 1 -- variables to test if player is in "inspect mode"
-	SetWeaponDegradation(object,0.0,0)
-    SetWeaponDirt(object,0.0,0)	
-end)
+███████████████████████████████████████████████████████████████████████████████
+]]
 
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ LOCAL VARIABLES
+-- ═════════════════════════════════════════════════════════════════════════
 
-RegisterCommand('inspect', function(source, args, raw)
-    local ped = PlayerPedId()
-    local wep = GetCurrentPedWeaponEntityIndex(ped, 0)
-    local _, wepHash = GetCurrentPedWeapon(ped, true, 0, true)
-    local WeaponType = GetWeaponType(wepHash)
-	if wepHash == `WEAPON_UNARMED` then return end
-	if WeaponType == "SHOTGUN" then WeaponType = "LONGARM" end
-	if WeaponType == "MELEE" then WeaponType = "SHORTARM" end
-	if WeaponType == "BOW" then WeaponType = "SHORTARM" end
-	ShowWeaponStats()
-	TaskItemInteraction_2(PlayerPedId(), wepHash, wep, 0, GetHashKey(WeaponType.."_HOLD_ENTER"), 0, 0, -1.0)
-end)
+local IsInCameraMode = nil
+local currentCamera = nil
 
-RegisterCommand('cleanweap', function(source, args, raw)
-	DestroyAllCams(true)
-	local cam = CreateCameraWithParams("DEFAULT_SCRIPTED_CAMERA", GetEntityCoords(PlayerPedId()), 0.0, 0.0, 0.0, 35.0, true, 0)
-	local PropId = GetHashKey("CLOTH")
-    local ped = PlayerPedId()
-	local Cloth = CreateObject(GetHashKey('s_balledragcloth01x'), GetEntityCoords(PlayerPedId()), false, true, false, false, true)
-    local wep = GetCurrentPedWeaponEntityIndex(ped, 0)
-    local _, wepHash = GetCurrentPedWeapon(ped, true, 0, true)
-    local WeaponType = GetWeaponType(wepHash)
-	local object = GetObjectIndexFromEntityIndex(GetCurrentPedWeaponEntityIndex(PlayerPedId(),0))
-    if wepHash == `WEAPON_UNARMED` then return end
-    if WeaponType == "SHOTGUN" then WeaponType = "LONGARM" end
-    if WeaponType == "MELEE" then WeaponType = "SHORTARM" end
-	if WeaponType == "BOW" then WeaponType = "SHORTARM" end
-	TriggerEvent("vorp_inventory:CloseInv");
-    TaskItemInteraction_2(PlayerPedId(), wepHash, Cloth, PropId, GetHashKey(WeaponType.."_CLEAN_ENTER"), 1, 1, -1.0) -- Enter cleaning mode
-	Wait(1000) -- waiting a little bit before switch to custom camera to render a smooth camera view
-	AttachCamToEntity(cam,PlayerPedId(), 0.65, 0.0, 1.15, true) -- attach the camera to the current selected weapon
-	PointCamAtEntity(cam, object, 0.0, 0.0, 0.0, true) -- the camera is targetting the current selected weapon
-	RenderScriptCams(true, true, 1500, true, true) -- render the camera config setted before and initiates the movement
-	Wait(1500) -- waiting a little bit to avoid drop camera before cleaning is done
-	IsInCameraMode = 1	-- variables to test if player is in "inspect mode"
-	SetWeaponDegradation(object,0.0,0)
-    SetWeaponDirt(object,0.0,0)
-end)
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ WEAPON TYPE DETECTION
+-- ═════════════════════════════════════════════════════════════════════════
 
---[[   -- function to start camera taken from redemrp_shops i let it there to debug 
-function StartCam()
+local function GetWeaponType(weaponHash)
+    -- Check if weapon is melee or knife
+    if Citizen.InvokeNative(0x959383DCD42040DA, weaponHash) or 
+       Citizen.InvokeNative(0x792E3EF76C911959, weaponHash) then
+        return "MELEE"
+    
+    -- Check if weapon is sniper, rifle, or repeater
+    elseif Citizen.InvokeNative(0x6AD66548840472E5, weaponHash) or 
+           Citizen.InvokeNative(0x0A82317B7EBFC420, weaponHash) or 
+           Citizen.InvokeNative(0xDDB2578E95EF7138, weaponHash) then
+        return "LONGARM"
+    
+    -- Check if weapon is shotgun
+    elseif Citizen.InvokeNative(0xC75386174ECE95D5, weaponHash) then
+        return "SHOTGUN"
+    
+    -- Check if weapon is pistol or revolver
+    elseif Citizen.InvokeNative(0xDDC64F5E31EEDAB6, weaponHash) or 
+           Citizen.InvokeNative(0xC212F1D05A8232BB, weaponHash) then
+        return "SHORTARM"
+    
+    else
+        Framework.Notify(
+            Language.translate[Config.Lang]['invalidWeapon'] or 'Error: This is not a valid weapon',
+            'error',
+            4000
+        )
+        return "ERROR"
+    end
+    
+    return false
+end
+
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ CAMERA MANAGEMENT
+-- ═════════════════════════════════════════════════════════════════════════
+
+local function EndCam()
+    if Config.General.enableCamera then
+        RenderScriptCams(false, true, 1000, true, false)
+        if currentCamera then
+            DestroyCam(currentCamera, false)
+            currentCamera = nil
+        end
+        DisplayHud(true)
+        DisplayRadar(true)
+        DestroyAllCams(true)
+    end
+end
+
+local function CreateCleaningCamera()
+    if not Config.General.enableCamera then
+        return nil
+    end
+    
     DestroyAllCams(true)
-    local camera_pos = GetObjectOffsetFromCoords(spawnCoords.x , spawnCoords.y, spawnCoords.z ,0.0 ,0.8, 0.8, 0.8)
-    camera = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", camera_pos.x, camera_pos.y, camera_pos.z, -35.00, 00.00, 135.00, 60.00, true, 0)
-    SetCamActive(camera,true)
-    RenderScriptCams(true, true, 1000, true, true)
-    DisplayHud(false)
-    DisplayRadar(false)
-    if canChange == true then
-        canChange = false
-        PreView (items_list[1].obj)
-        canChange = true
-    end
-end --]]
-
-function EndCam() -- function to drop all cameras setup, taken from redemrp_shops
-    RenderScriptCams(false, true, 1000, true, false)
-    DestroyCam(camera, false)
-    camera = nil
-    DisplayHud(true)
-    DisplayRadar(true)
-    DestroyAllCams(true)
+    local cam = CreateCameraWithParams(
+        "DEFAULT_SCRIPTED_CAMERA",
+        GetEntityCoords(PlayerPedId()),
+        0.0, 0.0, 0.0,
+        35.0,
+        true,
+        2
+    )
+    
+    return cam
 end
 
-function whenKeyJustPressed(key)
-    if IsControlJustPressed(0, key) then
-        return true
-    else
-        return false
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ WEAPON CLEANING LOGIC
+-- ═════════════════════════════════════════════════════════════════════════
+
+local function StartWeaponCleaning()
+    local ped = PlayerPedId()
+    local weaponObject = GetCurrentPedWeaponEntityIndex(ped, 0)
+    local _, weaponHash = GetCurrentPedWeapon(ped, true, 0, true)
+    
+    -- Check if player has a weapon equipped
+    if weaponHash == `WEAPON_UNARMED` then
+        Framework.Notify(
+            Language.translate[Config.Lang]['noWeapon'] or 'You need to have a weapon equipped',
+            'warning',
+            4000
+        )
+        return
+    end
+    
+    -- Get weapon type
+    local weaponType = GetWeaponType(weaponHash)
+    
+    if weaponType == "ERROR" then
+        return
+    end
+    
+    -- Adjust weapon type for compatibility
+    if weaponType == "SHOTGUN" then weaponType = "LONGARM" end
+    if weaponType == "MELEE" then weaponType = "SHORTARM" end
+    if weaponType == "BOW" then weaponType = "SHORTARM" end
+    
+    -- Close inventory if using VORP
+    if Framework.Type == 'VORP' then
+        TriggerEvent("vorp_inventory:CloseInv")
+    end
+    
+    -- Create cleaning cloth prop
+    local cloth = CreateObject(
+        GetHashKey('s_balledragcloth01x'),
+        GetEntityCoords(PlayerPedId()),
+        false, true, false, false, true
+    )
+    
+    local propId = GetHashKey("CLOTH")
+    local object = GetObjectIndexFromEntityIndex(GetCurrentPedWeaponEntityIndex(PlayerPedId(), 0))
+    
+    -- Start cleaning animation
+    TaskItemInteraction_2(
+        PlayerPedId(),
+        weaponHash,
+        cloth,
+        propId,
+        GetHashKey(weaponType .. "_CLEAN_ENTER"),
+        1, 1, -1.0
+    )
+    
+    -- Setup camera
+    if Config.General.enableCamera then
+        local cam = CreateCleaningCamera()
+        
+        Citizen.Wait(Config.General.cameraWaitTime)
+        
+        -- Attach camera to player and focus on weapon
+        AttachCamToEntity(cam, PlayerPedId(), 0.65, 0.0, 1.15, true)
+        PointCamAtEntity(cam, object, 0.0, 0.0, 0.0, true)
+        RenderScriptCams(true, true, Config.General.cameraTransitionTime, true, true)
+        
+        Citizen.Wait(Config.General.cameraTransitionTime)
+        
+        IsInCameraMode = 1
+        currentCamera = cam
+    end
+    
+    -- Apply weapon maintenance
+    if Config.WeaponMaintenance.resetDegradation then
+        SetWeaponDegradation(object, 0.0, 0)
+    end
+    
+    if Config.WeaponMaintenance.resetDirt then
+        SetWeaponDirt(object, 0.0, 0)
+    end
+    
+    if Config.Debug.printPlayerActions then
+        print("^2[LXR-CleanGun]^7 Weapon cleaned successfully")
     end
 end
 
-function whenKeyJustReleased() -- function to test if E or SPACEBAR keys are released 
-    if IsControlJustReleased(0, 0xCEFD9220) or IsControlJustReleased(0, 0xD9D0E1C0) then -- 0xCEFD9220 => E || 0xD9D0E1C0 => SpaceBar
-        return true
-    else
-        return false
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ WEAPON INSPECTION LOGIC
+-- ═════════════════════════════════════════════════════════════════════════
+
+local function ShowWeaponStats()
+    if not Config.WeaponMaintenance.showStatsUI then
+        return
     end
-end
-
-function whenKeyJustReleased2() -- function to test if F key is released
-    if IsControlJustReleased(0, 0xB2F377E8) then -- 0xB2F377E8 => F
-        return true
-    else
-        return false
-    end
-end
-
-Citizen.CreateThread(function()
-	while true do
-		Citizen.Wait(0)
-		if whenKeyJustPressed(key) then	
-		local ped = PlayerPedId()
-			local ped = PlayerPedId()
-			local wep = GetCurrentPedWeaponEntityIndex(ped, 0)
-			local _, wepHash = GetCurrentPedWeapon(ped, true, 0, true)
-			local WeaponType = GetWeaponType(wepHash)
-			if wepHash == `WEAPON_UNARMED` then return end
-			if WeaponType == "SHOTGUN" then WeaponType = "LONGARM" end
-			if WeaponType == "MELEE" then WeaponType = "SHORTARM" end
-			if WeaponType == "BOW" then WeaponType = "SHORTARM" end
-			ShowWeaponStats()
-			TaskItemInteraction_2(PlayerPedId(), wepHash, wep, 0, GetHashKey(WeaponType.."_HOLD_ENTER"), 0, 0, -1.0)
-		end
-		-- Test that evaluate if the player is always in "inspect" mode and if it needs to drop camera
-		if IsInCameraMode == 1 and whenKeyJustReleased() == true then
-			IsInCameraMode = IsInCameraMode + 1
-			--print("Cameramode = ",IsInCameraMode) -- debug 
-		elseif IsInCameraMode == 2 and whenKeyJustReleased2() then
-			IsInCameraMode = IsInCameraMode - 1
-			--print("Cameramode = ",IsInCameraMode) -- debug 
-		elseif IsInCameraMode == 1 and whenKeyJustReleased2() then
-			IsInCameraMode = nil
-			EndCam()
-			--print("Cameramode = ",IsInCameraMode) -- debug 
-		end	
-	end
-end)
-
-
-function ShowWeaponStats()
-    local PlayerPed = PlayerPedId()
-    local WeaponObject = GetObjectIndexFromEntityIndex(GetCurrentPedWeaponEntityIndex(PlayerPed , 0))
-    local _, WeaponHash = GetCurrentPedWeapon(PlayerPed, true, 0, true)
-    local Block = RequestFlowBlock(GetHashKey("PM_FLOW_WEAPON_INSPECT"))
-    local Container = DatabindingAddDataContainerFromPath("" , "ItemInspection")
-    DatabindingAddDataBool(Container, "Visible", true)
-    DatabindingAddDataString(Container, "tipText", GetLabelText(WeaponObject))
-    DatabindingAddDataHash(Container, "itemLabel", WeaponHash)
-    Citizen.InvokeNative(0x10A93C057B6BD944 ,Block)
-    Citizen.InvokeNative(0x3B7519720C9DCB45	,Block, 0)
-    Citizen.InvokeNative(0x4C6F2C4B7A03A266 ,-813354801, Block)
+    
+    local playerPed = PlayerPedId()
+    local weaponObject = GetObjectIndexFromEntityIndex(GetCurrentPedWeaponEntityIndex(playerPed, 0))
+    local _, weaponHash = GetCurrentPedWeapon(playerPed, true, 0, true)
+    
+    -- Request and setup weapon inspection UI
+    local block = RequestFlowBlock(GetHashKey("PM_FLOW_WEAPON_INSPECT"))
+    local container = DatabindingAddDataContainerFromPath("", "ItemInspection")
+    
+    DatabindingAddDataBool(container, "Visible", true)
+    DatabindingAddDataString(container, "tipText", GetLabelText(weaponObject))
+    DatabindingAddDataHash(container, "itemLabel", weaponHash)
+    
+    Citizen.InvokeNative(0x10A93C057B6BD944, block)
+    Citizen.InvokeNative(0x3B7519720C9DCB45, block, 0)
+    Citizen.InvokeNative(0x4C6F2C4B7A03A266, -813354801, block)
+    
+    -- Monitor inspection state
     Citizen.CreateThread(function()
         Wait(1000)
         while true do
@@ -185,114 +231,149 @@ function ShowWeaponStats()
     end)
 end
 
-function GetWeaponType(hash)
-	if Citizen.InvokeNative(0x959383DCD42040DA, hash)  or Citizen.InvokeNative(0x792E3EF76C911959, hash)   then
-		return "MELEE"
-	elseif Citizen.InvokeNative(0x6AD66548840472E5, hash) or Citizen.InvokeNative(0x0A82317B7EBFC420, hash) or Citizen.InvokeNative(0xDDB2578E95EF7138, hash) then
-		return "LONGARM"
-	elseif  Citizen.InvokeNative(0xC75386174ECE95D5, hash) then
-		return "SHOTGUN"
-	elseif  Citizen.InvokeNative(0xDDC64F5E31EEDAB6, hash) or Citizen.InvokeNative(0xC212F1D05A8232BB, hash) then
-		return "SHORTARM"
-	else TriggerEvent("vorp:TipRight", 'Erreur : Ce n\'est pas un objet/une arme valide', 4000) return "ERROR"
-	end
-	return false
+local function InspectWeapon()
+    local ped = PlayerPedId()
+    local weaponObject = GetCurrentPedWeaponEntityIndex(ped, 0)
+    local _, weaponHash = GetCurrentPedWeapon(ped, true, 0, true)
+    
+    -- Check if player has a weapon equipped
+    if weaponHash == `WEAPON_UNARMED` then
+        return
+    end
+    
+    -- Get weapon type
+    local weaponType = GetWeaponType(weaponHash)
+    
+    if weaponType == "ERROR" then
+        return
+    end
+    
+    -- Adjust weapon type for compatibility
+    if weaponType == "SHOTGUN" then weaponType = "LONGARM" end
+    if weaponType == "MELEE" then weaponType = "SHORTARM" end
+    if weaponType == "BOW" then weaponType = "SHORTARM" end
+    
+    -- Show weapon stats UI
+    ShowWeaponStats()
+    
+    -- Start inspection animation
+    TaskItemInteraction_2(
+        PlayerPedId(),
+        weaponHash,
+        weaponObject,
+        0,
+        GetHashKey(weaponType .. "_HOLD_ENTER"),
+        0, 0, -1.0
+    )
 end
 
---[[								wanted to convert but the return values are fucked up without natives ones
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ KEY PRESS DETECTION
+-- ═════════════════════════════════════════════════════════════════════════
 
-    UiflowblockIsLoaded(Block)
-    UiflowblockEnter(Block, 0)
-    UiStateMachineCreate(-813354801, Block)
-    Citizen.CreateThread(function()
-        Wait(1000)
-        while true do
-            Wait(100)
-            if not GetItemInteractionState(PlayerPedId()) then
-                UiStateMachineDestroy(-813354801)
-                break
-            end
+local function WhenKeyJustPressed(key)
+    return IsControlJustPressed(0, key)
+end
+
+local function WhenKeyJustReleased()
+    -- E or Spacebar
+    return IsControlJustReleased(0, Config.Keys.exitCamera1) or 
+           IsControlJustReleased(0, Config.Keys.exitCamera2)
+end
+
+local function WhenKeyJustReleased2()
+    -- F key
+    return IsControlJustReleased(0, Config.Keys.exitCamera3)
+end
+
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ MAIN THREAD (Key Detection & Camera Control)
+-- ═════════════════════════════════════════════════════════════════════════
+
+Citizen.CreateThread(function()
+    while true do
+        local sleep = Config.Performance.idleThreadSleep
+        
+        -- Check for inspection key press (Middle Mouse Button by default)
+        if Config.General.enableInspection and WhenKeyJustPressed(Config.Keys.inspect) then
+            sleep = Config.Performance.activeThreadSleep
+            InspectWeapon()
         end
+        
+        -- Handle camera mode state machine
+        if IsInCameraMode == 1 and WhenKeyJustReleased() then
+            IsInCameraMode = 2
+            sleep = Config.Performance.activeThreadSleep
+            
+        elseif IsInCameraMode == 2 and WhenKeyJustReleased2() then
+            IsInCameraMode = 1
+            sleep = Config.Performance.activeThreadSleep
+            
+        elseif IsInCameraMode == 1 and WhenKeyJustReleased2() then
+            IsInCameraMode = nil
+            EndCam()
+            sleep = Config.Performance.idleThreadSleep
+        end
+        
+        -- Optimize thread sleep
+        if IsInCameraMode then
+            sleep = Config.Performance.activeThreadSleep
+        end
+        
+        Citizen.Wait(sleep)
+    end
+end)
+
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ NETWORK EVENTS
+-- ═════════════════════════════════════════════════════════════════════════
+
+-- Event triggered when using a cleaning item
+RegisterNetEvent('lxr-cleangun:client:startCleaning')
+AddEventHandler('lxr-cleangun:client:startCleaning', function()
+    StartWeaponCleaning()
+end)
+
+-- Legacy VORP event support
+RegisterNetEvent('cleaning:startcleaningshort')
+AddEventHandler('cleaning:startcleaningshort', function()
+    StartWeaponCleaning()
+end)
+
+-- Event triggered by /inspect command
+RegisterNetEvent('lxr-cleangun:client:inspectWeapon')
+AddEventHandler('lxr-cleangun:client:inspectWeapon', function()
+    InspectWeapon()
+end)
+
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ COMMAND REGISTRATION (Client-side)
+-- ═════════════════════════════════════════════════════════════════════════
+
+if Config.General.enableAdminCommands then
+    -- Inspect command
+    RegisterCommand('inspect', function(source, args, raw)
+        InspectWeapon()
+    end)
+    
+    -- Clean weapon command (triggers camera/animation, server validates)
+    RegisterCommand('cleanweap', function(source, args, raw)
+        StartWeaponCleaning()
     end)
 end
 
-function GetWeaponType(hash)
-	if IsWeaponMeleeWeapon(hash)  or IsWeaponKnife(hash)   then
-		return "MELEE"
-	elseif IsWeaponSniper(hash) or IsWeaponRifle(hash) or IsWeaponRepeater(hash) then
-		return "LONGARM"
-	elseif  IsWeaponShotgun(hash) then
-		return "SHOTGUN"
-	elseif  IsWeaponPistol(hash) or IsWeaponRevolver(hash) then
-		return "SHORTARM"
-	end
-	return false
-end	--]]
+-- ═════════════════════════════════════════════════════════════════════════
+-- █████ RESOURCE CLEANUP
+-- ═════════════════════════════════════════════════════════════════════════
 
---weaponHash = {
---    "WEAPON_PISTOL_M1899",      
---    "WEAPON_PISTOL_MAUSER",       
---    "WEAPON_PISTOL_SEMIAUTO",        
---    "WEAPON_PISTOL_VOLCANIC",       
---    "WEAPON_REVOLVER_CATTLEMAN",       
---    "WEAPON_REVOLVER_DOUBLEACTION",       
---    "WEAPON_REVOLVER_LEMAT",        
---    "WEAPON_REVOLVER_SCHOFIELD",
---    "WEAPON_REPEATER_CARBINE",
---	"WEAPON_REPEATER_HENRY",
---	"WEAPON_RIFLE_VARMINT",
---    "WEAPON_REPEATER_WINCHESTER",
---    "WEAPON_SHOTGUN_DOUBLEBARREL",
---	"WEAPON_SHOTGUN_DOUBLEBARREL_EXOTIC",
---	"WEAPON_SHOTGUN_PUMP",
---	"WEAPON_SHOTGUN_REPEATING",
---	"WEAPON_SHOTGUN_SAWEDOFF",
---	"WEAPON_SHOTGUN_SEMIAUTO",
---    "WEAPON_SNIPERRIFLE_ROLLINGBLOCK_EXOTIC",
---    "WEAPON_SNIPERRIFLE_ROLLINGBLOCK",
---    "WEAPON_SNIPERRIFLE_CARCANO"
---}                                        
---
----- for cleaning your gun with animation ENJOY
---RegisterNetEvent('cleaning:startcleaningshort')
---AddEventHandler('cleaning:startcleaningshort', function(cleaning)
---    while cleaning do 
---           Citizen.Wait(0) 
---        for i = 1, #weaponHash, 1 do
---            local ped = PlayerPedId()
---            local Cloth= CreateObject(GetHashKey('s_balledragcloth01x'), GetEntityCoords(PlayerPedId()), false, true, false, false, true)
---            local PropId = GetHashKey("CLOTH")
---            local actshort = GetHashKey("SHORTARM_CLEAN_ENTER")
---            local actlong = GetHashKey("LONGARM_CLEAN_ENTER")
---            local retval, weaponName = GetCurrentPedWeapon(PlayerPedId(), false, GetHashKey(weaponHash[i]), false)
---            if i <= 9 then
---                TriggerEvent("vorp_inventory:CloseInv");
---                Citizen.InvokeNative(0x72F52AA2D2B172CC,  PlayerPedId(), 1242464081, Cloth, PropId, actshort, 1, 0, -1.0)   
---                Wait(15000)
---                TriggerEvent("vorp:NotifyLeft", Language.translate[Config.lang]['word'], Language.translate[Config.lang]['notif'], "generic_textures", "tick", 5000)
---                --Citizen.InvokeNative(0xA7A57E89E965D839, weaponHash, 0.0)
---                Citizen.InvokeNative(0xA7A57E89E965D839, weaponName, 0.0)
---                cleaning = false
---            else
---                TriggerEvent("vorp_inventory:CloseInv");
---                Citizen.InvokeNative(0x72F52AA2D2B172CC,  PlayerPedId(), 1242464081, Cloth, PropId, actlong, 1, 0, -1.0)   
---                Wait(15000)
---                TriggerEvent("vorp:NotifyLeft", Language.translate[Config.lang]['word'], Language.translate[Config.lang]['notif'], "generic_textures", "tick", 5000)
---                Citizen.InvokeNative(0xA7A57E89E965D839, weaponName, 0.0)
---                cleaning = false            
---            end
---            if cleaning == false then 
---                break
---            end
---        end 
---    end
---end)
--- 
---
---RegisterCommand('weapon', function(source, args, rawCommand)
---    local retval --[[ boolean ]], weaponHash = GetCurrentPedWeapon(PlayerPedId(), false, weaponHash , false)
---    local weaponName = Citizen.InvokeNative(0x89CF5FF3D363311E, weaponHash)
---    --print("Weapon name --> "..weaponName)
---    print("Weapon hash --> "..weaponHash)
---    --print("Weappon hash --> "..GetHashKey(weaponHash))
---end)
+AddEventHandler('onResourceStop', function(resourceName)
+    if GetCurrentResourceName() ~= resourceName then
+        return
+    end
+    
+    -- Cleanup camera on resource stop
+    if IsInCameraMode then
+        EndCam()
+        IsInCameraMode = nil
+    end
+end)
